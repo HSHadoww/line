@@ -1,4 +1,5 @@
 import axios from "axios";
+
 export default async (event) => {
   try {
     const { data } = await axios.get(
@@ -9,8 +10,17 @@ export default async (event) => {
         },
       }
     );
-    const cryptoData = response.data.data[0];
+    const cryptoData = data.data[0];
+    return {
+      name: cryptoData.name,
+      symbol: cryptoData.symbol,
+      price: cryptoData.quote.USD.price,
+      low: cryptoData.quote.USD.low_24h,
+      high: cryptoData.quote.USD.high_24h,
+      image: `https://s2.coinmarketcap.com/static/img/coins/64x64/${cryptoData.id}.png`,
+    };
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return null;
   }
 };

@@ -1,26 +1,38 @@
-import axios from "axios";
+// crypto.js
+import axios from 'axios'
 
-export default async (event) => {
+export default async function fetchCryptoData (symbol) {
   try {
     const { data } = await axios.get(
-      "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest",
+      'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest',
       {
         headers: {
-          "X-CMC_PRO_API_KEY": "aad62252-7c6e-41a2-8eda-c05a92d3a847",
-        },
+          'X-CMC_PRO_API_KEY': process.env.COINMARKETCAP_API_KEY
+        }
       }
-    );
-    const cryptoData = data.data[0];
-    return {
-      name: cryptoData.name,
-      symbol: cryptoData.symbol,
-      price: cryptoData.quote.USD.price,
-      low: cryptoData.quote.USD.low_24h,
-      high: cryptoData.quote.USD.high_24h,
-      image: `https://s2.coinmarketcap.com/static/img/coins/64x64/${cryptoData.id}.png`,
-    };
+    )
+
+    const matchedCrypto = data.data.find(
+      (cryptoData) =>
+        cryptoData.symbol.toLowerCase() === symbol.toLowerCase()
+    )
+
+    if (matchedCrypto) {
+      const cryptoData = {
+        name: matchedCrypto.name,
+        symbol: matchedCrypto.symbol,
+        price: matchedCrypto.quote.USD.price,
+        low: matchedCrypto.quote.USD.low_24h,
+        high: matchedCrypto.quote.USD.high_24h,
+        image: `https://s2.coinmarketcap.com/static/img/coins/64x64/${matchedCrypto.id}.png`
+      }
+
+      return [cryptoData]
+    } else {
+      return []
+    }
   } catch (error) {
-    console.error(error);
-    return null;
+    console.error('获取加密货币数据时出错:', error)
+    return []
   }
-};
+}
